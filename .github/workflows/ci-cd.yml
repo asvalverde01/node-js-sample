@@ -46,7 +46,7 @@ jobs:
 
       # 8. Escanear vulnerabilidades con Trivy
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@v0.8.1  # Versión actualizada
+        uses: aquasecurity/trivy-action@v0.57.1   # Versión actualizada
         with:
           image-ref: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
           format: 'table'
