@@ -28,6 +28,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'  # Puedes usar 'zulu' u otra distribución si prefieres
 
+      # (3a) Verificar la versión de Java
+      - name: Check Java version
+        run: java -version
+
       # (4) Instalar dependencias
       - name: Install Dependencies
         run: npm install
@@ -36,29 +40,35 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      # (6) Análisis de código con SonarCloud
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v1.6
-        with:
-          args: >
-            -Dsonar.projectKey=tu_proyecto_key
-            -Dsonar.organization=tu_organizacion
-            -Dsonar.host.url=https://sonarcloud.io
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # (6) Instalar SonarScanner manualmente
+      - name: Install SonarScanner
+        run: |
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
+          unzip sonar-scanner-cli-4.6.2.2472-linux.zip
+          sudo mv sonar-scanner-4.6.2.2472-linux /opt/sonar-scanner
+          echo "/opt/sonar-scanner/bin" >> $GITHUB_PATH
 
-      # (7) Construir la imagen Docker
+      # (7) Configurar SonarCloud
+      - name: SonarCloud Scan
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=tu_proyecto_key \
+            -Dsonar.organization=tu_organizacion \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      # (8) Construir la imagen Docker
       - name: Build Docker Image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest .
 
-      # (8) Subir la imagen a Docker Hub
+      # (9) Subir la imagen a Docker Hub
       - name: Push to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker push ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
 
-      # (9) Escanear vulnerabilidades con Trivy
+      # (10) Escanear vulnerabilidades con Trivy
       - name: Scan with Trivy
         uses: aquasecurity/trivy-action@master
         with:
