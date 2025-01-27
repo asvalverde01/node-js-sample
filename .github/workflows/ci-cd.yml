@@ -2,7 +2,6 @@ name: CI/CD Pipeline
 
 on:
   push:
-    # Se activa el workflow cuando hay un push a la rama 'master'
     branches:
       - master
 
@@ -15,11 +14,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # 2. Configurar Node.js
-      - name: Setup Node
+      # 2. Configurar Node.js 18 (actualizado desde 14)
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '18'  # Actualizado a Node.js 18
 
       # 3. Instalar dependencias
       - name: Install Dependencies
@@ -29,7 +28,7 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      # 5. Ejecutar ESLint
+      # 5. Ejecutar ESLint para análisis estático de código
       - name: Run ESLint
         run: npx eslint .
 
@@ -45,11 +44,10 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
 
       # 8. Escanear vulnerabilidades con Trivy
-      #    Usamos la ACCIÓN en @0.28.0 e indicamos la versión del BINARIO como v0.57.1
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@0.28.0  # Versión de la acción
+        uses: aquasecurity/trivy-action@v0.28.0  # Versión válida de la acción
         with:
-          version: 'v0.57.1'                   # Versión del binario Trivy
+          version: 'v0.57.1'  # Versión del binario Trivy
           image-ref: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
           format: 'table'
           exit-code: '1'    # Falla si hay vulnerabilidades con esa severidad
@@ -68,7 +66,9 @@ jobs:
       - name: Deploy to Test Environment
         run: |
           echo "Desplegando en entorno de pruebas (simulado)."
-          # Aquí puedes usar Docker Compose, Kubernetes, etc.
+          # Aquí puedes usar Docker Compose, Kubernetes, u otros scripts de despliegue real:
+          # Ejemplo con Docker Compose:
+          # docker-compose -f docker-compose.test.yml up -d
           echo "Despliegue de pruebas completado (simulado)."
 
   deploy-to-production:
