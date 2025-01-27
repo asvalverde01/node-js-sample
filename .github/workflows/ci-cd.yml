@@ -15,47 +15,40 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      # (2) Configurar Node 14
-      - name: Setup Node
+      # (2) Configurar Node.js 14
+      - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: '14'
 
       # (3) Configurar Java 17 (para SonarCloud)
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v3
         with:
+          distribution: 'temurin'
           java-version: '17'
-          distribution: 'temurin'  # Puedes usar 'zulu' u otra distribución si prefieres
 
-      # (3a) Verificar la versión de Java
-      - name: Check Java version
+      # (4) Verificar la versión de Java
+      - name: Check Java Version
         run: java -version
 
-      # (4) Instalar dependencias
+      # (5) Instalar dependencias
       - name: Install Dependencies
         run: npm install
 
-      # (5) Ejecutar pruebas unitarias
+      # (6) Ejecutar pruebas unitarias
       - name: Run Tests
         run: npm test
 
-      # (6) Instalar SonarScanner manualmente
-      - name: Install SonarScanner
-        run: |
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
-          unzip sonar-scanner-cli-4.6.2.2472-linux.zip
-          sudo mv sonar-scanner-4.6.2.2472-linux /opt/sonar-scanner
-          echo "/opt/sonar-scanner/bin" >> $GITHUB_PATH
-
-      # (7) Configurar SonarCloud
+      # (7) Análisis de código con SonarCloud usando la acción oficial
       - name: SonarCloud Scan
-        run: |
-          sonar-scanner \
-            -Dsonar.projectKey=tu_proyecto_key \
-            -Dsonar.organization=tu_organizacion \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        uses: SonarSource/sonarcloud-github-action@v1.10
+        with:
+          organization: 'tu_organizacion'          # Reemplaza con tu organización
+          projectKey: 'tu_proyecto_key'            # Reemplaza con tu project key
+          projectName: 'node-js-sample'            # Opcional: nombre de tu proyecto
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # (8) Construir la imagen Docker
       - name: Build Docker Image
@@ -70,7 +63,7 @@ jobs:
 
       # (10) Escanear vulnerabilidades con Trivy
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.7.0
         with:
           image-ref: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
 
@@ -88,7 +81,6 @@ jobs:
           # Aquí puedes usar Docker Compose, Kubernetes, o cualquier script de despliegue real:
           # docker-compose -f docker-compose.test.yml up -d
           # kubectl apply -f k8s/test-deployment.yml
-          # etc.
           echo "Despliegue de pruebas completado (simulado)."
 
   deploy-to-production:
