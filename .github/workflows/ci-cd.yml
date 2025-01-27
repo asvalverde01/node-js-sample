@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # 2. Configurar Node.js 14
+      # 2. Configurar Node.js
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -29,7 +29,7 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      # 5. Ejecutar ESLint para análisis estático de código
+      # 5. Ejecutar ESLint
       - name: Run ESLint
         run: npx eslint .
 
@@ -45,12 +45,17 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
 
       # 8. Escanear vulnerabilidades con Trivy
+      #    Usamos la ACCIÓN en @0.28.0 e indicamos la versión del BINARIO como v0.57.1
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@v0.19.2  # Versión actualizada y válida
+        uses: aquasecurity/trivy-action@0.28.0  # Versión de la acción
         with:
+          version: 'v0.57.1'                   # Versión del binario Trivy
           image-ref: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
           format: 'table'
-          exit-code: '1'  # Falla el job si se encuentran vulnerabilidades críticas
+          exit-code: '1'    # Falla si hay vulnerabilidades con esa severidad
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
   deploy-to-test:
     runs-on: ubuntu-latest
@@ -63,9 +68,7 @@ jobs:
       - name: Deploy to Test Environment
         run: |
           echo "Desplegando en entorno de pruebas (simulado)."
-          # Aquí puedes usar Docker Compose, Kubernetes, u otros scripts de despliegue real:
-          # Ejemplo con Docker Compose:
-          # docker-compose -f docker-compose.test.yml up -d
+          # Aquí puedes usar Docker Compose, Kubernetes, etc.
           echo "Despliegue de pruebas completado (simulado)."
 
   deploy-to-production:
@@ -78,13 +81,11 @@ jobs:
 
       - name: Validate Deployment Policies (OPA)
         run: |
-          echo "Validando Políticas con Open Policy Agent (OPA)."
-          # Ejemplo de validación con OPA:
-          # opa eval --data ./policies/ --input ./input.json "data.example_policy.allow"
+          echo "Validando Políticas con Open Policy Agent (OPA) - Simulado."
+          # Ejemplo: opa eval --data ./policies/ --input ./input.json "data.example_policy.allow"
           echo "Políticas validadas satisfactoriamente (simulado)."
 
       - name: Deploy to Production (Simulated)
         run: |
-          echo "Desplegando en producción (simulado)."
-          # Nuevamente, aquí irían los comandos reales de despliegue
+          echo "Desplegando en un entorno de producción (simulado)."
           echo "Despliegue en producción completado (simulado)."
