@@ -13,11 +13,11 @@ jobs:
     steps:
       # 1. Descargar el código
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      # 2. Configurar Node 14
+      # 2. Configurar Node.js 14
       - name: Setup Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '14'
 
@@ -29,7 +29,7 @@ jobs:
       - name: Run Tests
         run: npm test
 
-      # 5. Ejecutar ESLint
+      # 5. Ejecutar ESLint para análisis estático de código
       - name: Run ESLint
         run: npx eslint .
 
@@ -46,7 +46,7 @@ jobs:
 
       # 8. Escanear vulnerabilidades con Trivy
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@v0.57.1   # Versión actualizada
+        uses: aquasecurity/trivy-action@v0.19.2  # Versión actualizada y válida
         with:
           image-ref: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
           format: 'table'
@@ -58,12 +58,12 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Deploy to Test Environment
         run: |
           echo "Desplegando en entorno de pruebas (simulado)."
-          # Aquí puedes usar Docker Compose, Kubernetes, o cualquier script de despliegue real:
+          # Aquí puedes usar Docker Compose, Kubernetes, u otros scripts de despliegue real:
           # Ejemplo con Docker Compose:
           # docker-compose -f docker-compose.test.yml up -d
           echo "Despliegue de pruebas completado (simulado)."
@@ -74,7 +74,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Validate Deployment Policies (OPA)
         run: |
