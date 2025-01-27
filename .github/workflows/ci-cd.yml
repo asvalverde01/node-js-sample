@@ -45,9 +45,9 @@ jobs:
 
       # 8. Escanear vulnerabilidades con Trivy
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@v0.28.0  # Versión válida de la acción
+        uses: aquasecurity/trivy-action@0.28.0  # Versión válida de la acción (sin 'v')
         with:
-          version: 'v0.57.1'  # Versión del binario Trivy
+          version: 'v0.57.1'                   # Versión del binario Trivy
           image-ref: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
           format: 'table'
           exit-code: '1'    # Falla si hay vulnerabilidades con esa severidad
