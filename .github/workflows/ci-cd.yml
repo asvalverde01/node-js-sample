@@ -2,9 +2,8 @@ name: CI/CD Pipeline
 
 on:
   push:
-    # Se activa el workflow cuando hay un push a la rama 'master'
     branches:
-      - master
+      - master  # Asegúrate de que la rama sea 'master'
 
 jobs:
   build-and-test:
@@ -51,7 +50,7 @@ jobs:
 
       # (8) Escanear vulnerabilidades con Snyk
       - name: Snyk Scan
-        uses: snyk/actions@master
+        uses: snyk/actions@v2  # Actualizado a v2
         with:
           args: container test ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest --file=Dockerfile
         env:
