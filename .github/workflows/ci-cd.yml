@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      # (2) Configurar Node 14
+      # (2) Configurar Node.js 14
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
@@ -50,7 +50,7 @@ jobs:
 
       # (8) Escanear vulnerabilidades con Snyk
       - name: Snyk Scan
-        uses: snyk/actions@v2  # Actualizado a v2
+        uses: snyk/actions@v1  # Actualizado a v1
         with:
           args: container test ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest --file=Dockerfile
         env:
