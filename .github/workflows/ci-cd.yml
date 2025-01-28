@@ -50,7 +50,7 @@ jobs:
 
       # (8) Escanear vulnerabilidades con Snyk
       - name: Snyk Scan
-        uses: snyk/actions@v1  # Actualizado a v1
+        uses: snyk/actions@v2.3.0   # Actualizado a v1
         with:
           args: container test ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest --file=Dockerfile
         env:
