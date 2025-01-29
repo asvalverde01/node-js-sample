@@ -5,6 +5,7 @@ pipeline {
         // Configuraciones de entorno
         SONARQUBE_SERVER = 'SonarQube' // Nombre configurado en Manage Jenkins > Configure System
         DOCKER_IMAGE = 'searinox7663/node-js-sample:latest' // Cambiar según tu imagen de Docker
+        SONAR_SCANNER_HOME = 'C:\\sonar-scanner\\bin\\sonar-scanner.bat' // Ruta a sonar-scanner.bat
     }
 
     stages {
@@ -28,7 +29,7 @@ pipeline {
                 // Ejecutar análisis con SonarQube
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
                     bat """
-                        sonar-scanner ^
+                        "%SONAR_SCANNER_HOME%" ^
                             -Dsonar.projectKey=node-js-sample ^
                             -Dsonar.sources=. ^
                             -Dsonar.host.url=http://localhost:9000 ^
@@ -59,7 +60,6 @@ pipeline {
             steps {
                 // Escanear la imagen Docker con Trivy
                 bat "trivy image %DOCKER_IMAGE% --exit-code 0 || echo Vulnerabilidades encontradas pero continuando"
-                // Nota: El operador '||' en Windows puede requerir manejo adicional dependiendo de tu versión de Trivy
             }
         }
 
@@ -67,8 +67,6 @@ pipeline {
             steps {
                 // Desplegar en entorno de pruebas (simulado)
                 echo "Desplegando en entorno de pruebas (simulado)..."
-                // Aquí puedes agregar comandos para desplegar, por ejemplo:
-                // bat 'docker run -d -p 5000:5000 %DOCKER_IMAGE%'
             }
         }
 
@@ -76,8 +74,6 @@ pipeline {
             steps {
                 // Validar políticas con Open Policy Agent (simulado)
                 echo "Validando políticas con OPA (simulado)..."
-                // Agrega comandos reales si tienes políticas definidas
-                // bat 'opa eval --data ./policies/ --input ./input.json "data.policy.allow"'
             }
         }
 
@@ -85,8 +81,6 @@ pipeline {
             steps {
                 // Desplegar en producción (simulado)
                 echo "Desplegando en producción (simulado)..."
-                // Agrega comandos reales para despliegue si es necesario
-                // bat 'docker run -d -p 80:5000 %DOCKER_IMAGE%'
             }
         }
     }
@@ -94,7 +88,6 @@ pipeline {
     post {
         always {
             echo "Pipeline finalizado. Realizando limpieza si es necesario..."
-            // Agrega pasos de limpieza si es necesario
         }
     }
 }
