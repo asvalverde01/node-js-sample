@@ -43,12 +43,9 @@ pipeline {
             steps {
                 script {
                     // Iniciar sesión en Docker Hub usando "Secret Text"
-                    withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_PASSWORD')]) {
-                        // Depuración: Mostrar parte del token
-                        bat 'echo DOCKER_PASSWORD=%DOCKER_PASSWORD:~0,5%****'
-
+                    withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
                         // Login usando usuario fijo y token
-                        bat 'echo %DOCKER_PASSWORD% | docker login -u searinox7663 --password-stdin'
+                        bat "docker login -u searinox7663 -p %DOCKER_TOKEN%"
                     }
 
                     // Construir la imagen Docker
@@ -60,7 +57,33 @@ pipeline {
             }
         }
 
-        // Otras etapas...
+        stage('Vulnerability Scan (Trivy)') {
+            steps {
+                // Escanear la imagen Docker con Trivy
+                bat "trivy image %DOCKER_IMAGE% --exit-code 0 || echo Vulnerabilidades encontradas pero continuando"
+            }
+        }
+
+        stage('Deploy to Test Environment') {
+            steps {
+                // Desplegar en entorno de pruebas (simulado)
+                echo "Desplegando en entorno de pruebas (simulado)..."
+            }
+        }
+
+        stage('Validate Policies (OPA)') {
+            steps {
+                // Validar políticas con Open Policy Agent (simulado)
+                echo "Validando políticas con OPA (simulado)..."
+            }
+        }
+
+        stage('Deploy to Production (Simulated)') {
+            steps {
+                // Desplegar en producción (simulado)
+                echo "Desplegando en producción (simulado)..."
+            }
+        }
     }
 
     post {
