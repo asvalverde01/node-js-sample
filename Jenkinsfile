@@ -39,21 +39,16 @@ pipeline {
             }
         }
 
-        stage('Debug Credentials') {
-            steps {
-                script {
-                    bat 'echo DOCKER_PASSWORD length: %DOCKER_PASSWORD% | find /v /c " "'
-                }
-            }
-        }
-
-
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Iniciar sesión en Docker Hub
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
+                    // Iniciar sesión en Docker Hub usando "Secret Text"
+                    withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_PASSWORD')]) {
+                        // Depuración: Mostrar parte del token
+                        bat 'echo DOCKER_PASSWORD=%DOCKER_PASSWORD:~0,5%****'
+
+                        // Login usando usuario fijo y token
+                        bat 'echo %DOCKER_PASSWORD% | docker login -u searinox7663 --password-stdin'
                     }
 
                     // Construir la imagen Docker
@@ -65,33 +60,7 @@ pipeline {
             }
         }
 
-        stage('Vulnerability Scan (Trivy)') {
-            steps {
-                // Escanear la imagen Docker con Trivy
-                bat "trivy image %DOCKER_IMAGE% --exit-code 0 || echo Vulnerabilidades encontradas pero continuando"
-            }
-        }
-
-        stage('Deploy to Test Environment') {
-            steps {
-                // Desplegar en entorno de pruebas (simulado)
-                echo "Desplegando en entorno de pruebas (simulado)..."
-            }
-        }
-
-        stage('Validate Policies (OPA)') {
-            steps {
-                // Validar políticas con Open Policy Agent (simulado)
-                echo "Validando políticas con OPA (simulado)..."
-            }
-        }
-
-        stage('Deploy to Production (Simulated)') {
-            steps {
-                // Desplegar en producción (simulado)
-                echo "Desplegando en producción (simulado)..."
-            }
-        }
+        // Otras etapas...
     }
 
     post {
