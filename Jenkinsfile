@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        // Configuraciones de entorno
         SONARQUBE_SERVER = 'SonarQube' // Nombre configurado en Manage Jenkins > Configure System
         DOCKER_IMAGE = 'searinox7663/node-js-sample:latest' // Cambiar según tu imagen de Docker
     }
@@ -10,15 +11,15 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clonar el repositorio desde Git
-                git branch: 'master', url: 'https://github.com/asvalverde01/node-js-sample'
+                git branch: 'master', url: 'https://github.com/asvalverde01/node-js-sample.git'
             }
         }
 
         stage('Build & Test') {
             steps {
                 // Instalar dependencias y ejecutar pruebas
-                sh 'npm install'
-                sh 'npm test'
+                bat 'npm install'
+                bat 'npm test'
             }
         }
 
@@ -26,13 +27,13 @@ pipeline {
             steps {
                 // Ejecutar análisis con SonarQube
                 withSonarQubeEnv("${SONARQUBE_SERVER}") {
-                    sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=node-js-sample \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=http://localhost:9000 \
+                    bat """
+                        sonar-scanner ^
+                            -Dsonar.projectKey=node-js-sample ^
+                            -Dsonar.sources=. ^
+                            -Dsonar.host.url=http://localhost:9000 ^
                             -Dsonar.login=sqa_5160691e529013cfbfcbbbb4abfd10fe59a8e1bd
-                    '''
+                    """
                 }
             }
         }
@@ -42,14 +43,14 @@ pipeline {
                 script {
                     // Iniciar sesión en Docker Hub
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                        bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
                     }
 
                     // Construir la imagen Docker
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    bat "docker build -t %DOCKER_IMAGE% ."
 
                     // Subir la imagen a Docker Hub
-                    sh "docker push ${DOCKER_IMAGE}"
+                    bat "docker push %DOCKER_IMAGE%"
                 }
             }
         }
@@ -57,8 +58,8 @@ pipeline {
         stage('Vulnerability Scan (Trivy)') {
             steps {
                 // Escanear la imagen Docker con Trivy
-                sh "trivy image ${DOCKER_IMAGE} --exit-code 0 || true"
-                // Puedes usar --exit-code 1 para que el pipeline falle si se encuentran vulnerabilidades
+                bat "trivy image %DOCKER_IMAGE% --exit-code 0 || echo Vulnerabilidades encontradas pero continuando"
+                // Nota: El operador '||' en Windows puede requerir manejo adicional dependiendo de tu versión de Trivy
             }
         }
 
@@ -67,7 +68,7 @@ pipeline {
                 // Desplegar en entorno de pruebas (simulado)
                 echo "Desplegando en entorno de pruebas (simulado)..."
                 // Aquí puedes agregar comandos para desplegar, por ejemplo:
-                // sh 'docker run -d -p 5000:5000 ${DOCKER_IMAGE}'
+                // bat 'docker run -d -p 5000:5000 %DOCKER_IMAGE%'
             }
         }
 
@@ -76,7 +77,7 @@ pipeline {
                 // Validar políticas con Open Policy Agent (simulado)
                 echo "Validando políticas con OPA (simulado)..."
                 // Agrega comandos reales si tienes políticas definidas
-                // sh 'opa eval --data ./policies/ --input ./input.json "data.policy.allow"'
+                // bat 'opa eval --data ./policies/ --input ./input.json "data.policy.allow"'
             }
         }
 
@@ -85,7 +86,7 @@ pipeline {
                 // Desplegar en producción (simulado)
                 echo "Desplegando en producción (simulado)..."
                 // Agrega comandos reales para despliegue si es necesario
-                // sh 'docker run -d -p 80:5000 ${DOCKER_IMAGE}'
+                // bat 'docker run -d -p 80:5000 %DOCKER_IMAGE%'
             }
         }
     }
