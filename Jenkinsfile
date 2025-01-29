@@ -44,7 +44,7 @@ pipeline {
                 script {
                     // Iniciar sesión en Docker Hub usando "Secret Text"
                     withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
-                        // Login usando usuario fijo y token
+                        // Ejecutar el login usando el token directamente
                         bat "docker login -u searinox7663 -p %DOCKER_TOKEN%"
                     }
 
@@ -60,9 +60,12 @@ pipeline {
         stage('Vulnerability Scan (Trivy)') {
             steps {
                 // Escanear la imagen Docker con Trivy
-                bat "trivy image %DOCKER_IMAGE% --exit-code 0 || echo Vulnerabilidades encontradas pero continuando"
+                bat """
+                    trivy image searinox7663/node-js-sample:latest --exit-code 1 --no-progress || echo "Vulnerabilidades encontradas pero continuando"
+                """
             }
         }
+
 
         stage('Deploy to Test Environment') {
             steps {
