@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clonar el repositorio desde Git
-                git branch: 'main', url: 'https://github.com/tu_usuario/tu_repositorio.git'
+                git branch: 'master', url: 'https://github.com/asvalverde01/node-js-sample'
             }
         }
 
