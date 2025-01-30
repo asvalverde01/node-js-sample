@@ -59,10 +59,19 @@ pipeline {
 
         sstage('Vulnerability Scan (Trivy)') {
             steps {
-                // Escanear la imagen Docker con Trivy
-                bat """
-                    trivy image searinox7663/node-js-sample:latest --exit-code 1 --no-progress || echo "Vulnerabilidades encontradas pero continuando"
-                """
+                script {
+                    def trivyResult = bat(
+                        script: 'trivy image searinox7663/node-js-sample:latest --exit-code 1 --no-progress',
+                        returnStatus: true
+                    )
+                    
+                    if (trivyResult == 0) {
+                        echo "No vulnerabilidades críticas encontradas."
+                    } else {
+                        echo "Se encontraron vulnerabilidades, pero continuaremos."
+                        // Opcional: currentBuild.result = 'UNSTABLE'
+                    }
+                }
             }
         }
 
