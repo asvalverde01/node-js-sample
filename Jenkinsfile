@@ -57,7 +57,7 @@ pipeline {
             }
         }
 
-        stage('Vulnerability Scan (Trivy)') {
+        sstage('Vulnerability Scan (Trivy)') {
             steps {
                 // Escanear la imagen Docker con Trivy
                 bat """
@@ -65,6 +65,7 @@ pipeline {
                 """
             }
         }
+
 
 
         stage('Deploy to Test Environment') {
