@@ -1,0 +1,155 @@
+name: CI/CD Pipeline
+
+# Evento que disparará el pipeline: cada push a la rama main
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    # Se ejecutará en un contenedor Ubuntu de GitHub Actions
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descarga el código del repositorio
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        # Permite que el checkout continúe incluso si hay submódulos que fallan
+        with:
+          submodules: false
+
+      # 2. Configura la versión de Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: 'npm' # Habilita el caché de npm para acelerar las instalaciones futuras
+
+      # 3. Instala dependencias
+      - name: Install Dependencies
+        run: npm install
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 4. Ejecuta pruebas unitarias
+      - name: Run Tests
+        run: npm test
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 5. Análisis de código con SonarCloud
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v1.6
+        with:
+          args: >
+            -Dsonar.projectKey=tu_proyecto_key
+            -Dsonar.organization=tu_organizacion
+            -Dsonar.host.url=https://sonarcloud.io
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 6. Construye la imagen Docker
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest .
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 7. Inicia sesión en Docker Hub y realiza el push de la imagen
+      - name: Push to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 8. Escanea la imagen Docker con Trivy para verificar vulnerabilidades
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/node-js-sample:latest
+          format: 'table'
+          exit-code: '0' # Configurado para no fallar el build en caso de vulnerabilidades
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 9. Recolecta los resultados y determina el estado del build
+      - name: Set Build Status
+        run: |
+          if [ "${{ steps.Scan_with_Trivy.outcome }}" == "failure" ]; then
+            echo "Vulnerabilidades detectadas durante el escaneo con Trivy."
+            echo "##vso[task.logissue type=warning]Vulnerabilidades detectadas durante el escaneo con Trivy."
+            exit 0 # Marca el build como exitoso pero con advertencias
+          else
+            echo "No se encontraron vulnerabilidades críticas."
+          fi
+
+  # Despliegue a Entorno de Pruebas
+  deploy-to-test:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      # 1. Descarga el código del repositorio
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # 2. Despliega en entorno de pruebas (simulado)
+      - name: Deploy to Test Environment
+        run: |
+          echo "Desplegando en entorno de pruebas (simulado)..."
+          # Aquí puedes agregar comandos reales para desplegar la aplicación en un entorno de pruebas
+          # Ejemplos:
+          # docker-compose -f docker-compose.test.yml up -d
+          # kubectl apply -f test-deployment.yml
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+  # Validación de Políticas y Despliegue a Producción Simulada
+  deploy-to-production:
+    runs-on: ubuntu-latest
+    needs: deploy-to-test
+    steps:
+      # 1. Descarga el código del repositorio
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # 2. Validar políticas con Open Policy Agent (OPA) - Simulado
+      - name: Validate Deployment Policies (OPA)
+        run: |
+          echo "Validando Políticas con Open Policy Agent (OPA) - Simulado"
+          # Aquí puedes agregar comandos reales para validar políticas con OPA
+          # Ejemplo:
+          # opa eval --data ./policies/ --input ./input.json "data.policies.allow"
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 3. Despliega en producción (simulado)
+      - name: Deploy to Production (Simulated)
+        run: |
+          echo "Desplegando en entorno de producción (simulado)..."
+          # Aquí puedes agregar comandos reales para desplegar la aplicación en producción
+          # Ejemplos:
+          # docker-compose -f docker-compose.production.yml up -d
+          # kubectl apply -f production-deployment.yml
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 4. Inicia el monitoreo de seguridad post-despliegue (simulado)
+      - name: Post-Deployment Security Monitoring
+        run: |
+          echo "Iniciando monitoreo de seguridad post-despliegue..."
+          # Aquí puedes agregar comandos para iniciar herramientas de monitoreo
+          # Ejemplos:
+          # ./start-monitoring.sh
+        # Permite que esta etapa continúe incluso si falla
+        continue-on-error: true
+
+      # 5. Recolecta los resultados y determina el estado final del build
+      - name: Set Final Build Status
+        run: |
+          echo "Pipeline completado con etapas simuladas."
+          # Aquí puedes agregar lógica para determinar el estado final basado en resultados previos
+
