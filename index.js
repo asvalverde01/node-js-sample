@@ -30,7 +30,7 @@ app.get('/', function(request, response) {
       </style>
     </head>
     <body>
-      <h1>Pipeline Testing 25 Git!</h1>
+      <h1>Pipeline Testing 26 Git!</h1>
       <p>Bienvenido a la demostración de nuestro pipeline de CI/CD con integración de DevSecOps.</p>
       <div class="status">
         <p><strong>Puerto Actual:</strong> ${app.get('port')}</p>
